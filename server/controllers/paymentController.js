@@ -1,4 +1,4 @@
-const razorpayInstance = require("./config/razorpay");
+const razorpayInstance = require("../config/razorPay");
 
 exports.createOrder = async (req, res) => {
   try {
