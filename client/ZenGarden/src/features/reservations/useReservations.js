@@ -8,6 +8,22 @@ import {
   getAvailableSlots
 } from '../../services/reservationsService.js';
 
+const toArray = (val) =>
+  Array.isArray(val) ? val
+  : Array.isArray(val?.data) ? val.data
+  : Array.isArray(val?.items) ? val.items
+  : Array.isArray(val?.data?.reservations) ? val.data.reservations
+  : [];
+
+const getTotal = (res, data) =>
+  Number(
+    res?.meta?.total ??
+    res?.total ??
+    res?.data?.pagination?.total ??
+    data.length ??
+    0
+  );
+
 export function useReservations({ scope = 'mine', initial = {} } = {}) {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
@@ -29,19 +45,20 @@ export function useReservations({ scope = 'mine', initial = {} } = {}) {
       const q = { ...query, ...override };
       const svc = scope === 'all' ? listAllReservations : listMyReservations;
       const res = await svc(q);
-      const data = res?.data || res?.items || [];
-      const meta = res?.meta || {};
+      const data = toArray(res);
       setItems(data);
-      setTotal(meta.total || res?.total || data.length);
+      setTotal(getTotal(res, data));
       setQuery(q);
     } catch (e) {
       setError(e);
+      setItems([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
   }, [query, scope]);
 
-  useEffect(() => { load(); }, [load]); // initial load
+  useEffect(() => { load(); }, [load]);
 
   const create = useCallback(async (payload) => {
     const res = await createReservation(payload);
@@ -59,7 +76,7 @@ export function useReservations({ scope = 'mine', initial = {} } = {}) {
     if (!date) return [];
     try {
       const res = await getAvailableSlots(date);
-      return res?.data || res || [];
+      return toArray(res);
     } catch {
       return [];
     }

@@ -4,7 +4,7 @@
 // VITE_APP_NAME=ZenGarden
 
 export const APP_NAME = import.meta.env.VITE_APP_NAME || 'ZenGarden';
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||  'https://zengarden-y3vy.onrender.com';
 
 export const IS_DEV = Boolean(import.meta.env.DEV);
 export const IS_PROD = Boolean(import.meta.env.PROD);

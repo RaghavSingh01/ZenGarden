@@ -16,7 +16,8 @@ export default function DataTable({
   total = 0,
   onPageChange
 }) {
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const rows = Array.isArray(data) ? data : [];
+  const totalPages = Math.max(1, Math.ceil((Number(total) || rows.length) / pageSize));
 
   return (
     <div className="stack" style={{ gap: 12 }}>
@@ -33,13 +34,13 @@ export default function DataTable({
               </tr>
             </thead>
             <tbody>
-              {data.length === 0 ? (
+              {rows.length === 0 ? (
                 <tr>
                   <td colSpan={columns.length} style={{ padding: 16, color: 'var(--zg-color-text-muted)' }}>
                     No data
                   </td>
                 </tr>
-              ) : data.map((row, i) => (
+              ) : rows.map((row, i) => (
                 <tr key={row.id || row._id || i}>
                   {columns.map(col => (
                     <td key={col.key} style={{ padding: '12px 14px', borderBottom: '1px solid var(--zg-color-border)' }}>

@@ -1,5 +1,5 @@
 // src/features/users/UsersTable.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from '../../components/UI/DataTable.jsx';
 import Input from '../../components/UI/Input.jsx';
 import Select from '../../components/UI/Select.jsx';
@@ -35,23 +35,35 @@ export default function UsersTable({
   const [role, setRole] = useState('');
   const [status, setStatus] = useState('');
 
+  // Ensure rows is always an array
+  const rows = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+  const safeTotal = Number.isFinite(total) ? total : rows.length;
+
+  // Debounced filter
   useEffect(() => {
     const id = setTimeout(() => onFilter?.({ search, role, status, page: 1 }), 300);
     return () => clearTimeout(id);
   }, [search, role, status, onFilter]);
 
-  const columns = [
-    { key: 'name', header: 'Name', render: r => r.name || '—' },
-    { key: 'email', header: 'Email' },
+  const columns = useMemo(() => ([
+    { key: 'name', header: 'Name', render: r => r?.name || '—' },
+    { key: 'email', header: 'Email', render: r => r?.email || '—' },
     {
       key: 'role',
       header: 'Role',
-      render: r => <Badge variant={r.role === 'admin' ? 'accent' : r.role === 'chef' ? 'info' : 'success'}>{r.role}</Badge>
+      render: r => {
+        const roleLabel = r?.role || 'user';
+        const variant = roleLabel === 'admin' ? 'accent' : roleLabel === 'chef' ? 'info' : 'success';
+        return <Badge variant={variant}>{roleLabel}</Badge>;
+      }
     },
     {
       key: 'status',
       header: 'Status',
-      render: r => <Badge variant={r.status === 'disabled' ? 'muted' : 'success'}>{r.status || 'active'}</Badge>
+      render: r => {
+        const st = r?.status || 'active';
+        return <Badge variant={st === 'disabled' ? 'muted' : 'success'}>{st}</Badge>;
+      }
     },
     {
       key: 'actions',
@@ -62,40 +74,65 @@ export default function UsersTable({
           <Select
             name="role"
             value=""
-            onChange={(e) => onChangeRole?.(r._id || r.id, e.target.value)}
+            onChange={(e) => onChangeRole?.(r?._id || r?.id, e.target.value)}
             options={[{ value: '', label: 'Set role...' }, ...ROLE_OPTS.slice(1)]}
           />
           <Select
             name="status"
             value=""
-            onChange={(e) => onChangeStatus?.(r._id || r.id, e.target.value)}
+            onChange={(e) => onChangeStatus?.(r?._id || r?.id, e.target.value)}
             options={[
               { value: '', label: 'Set status...' },
               { value: 'active', label: 'Activate' },
               { value: 'disabled', label: 'Disable' }
             ]}
           />
-          <Button variant="danger" onClick={() => onDelete?.(r._id || r.id)}>Delete</Button>
+          <Button variant="danger" onClick={() => onDelete?.(r?._id || r?.id)}>Delete</Button>
         </div>
       )
     }
-  ];
+  ]), [onEdit, onChangeRole, onChangeStatus, onDelete]);
 
   return (
     <div className="stack" style={{ gap: 12 }}>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <Input name="search" placeholder="Search name/email..." value={search} onChange={(e) => setSearch(e.target.value)} />
-        <Select name="role" value={role} onChange={(e) => setRole(e.target.value)} options={ROLE_OPTS} />
-        <Select name="status" value={status} onChange={(e) => setStatus(e.target.value)} options={STATUS_OPTS} />
-        <Button variant="outline" onClick={() => onFilter?.({ search: '', role: '', status: '', page: 1 })}>Reset</Button>
+        <Input
+          name="search"
+          placeholder="Search name/email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <Select
+          name="role"
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          options={ROLE_OPTS}
+        />
+        <Select
+          name="status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          options={STATUS_OPTS}
+        />
+        <Button
+          variant="outline"
+          onClick={() => {
+            setSearch('');
+            setRole('');
+            setStatus('');
+            onFilter?.({ search: '', role: '', status: '', page: 1 });
+          }}
+        >
+          Reset
+        </Button>
       </div>
 
       <DataTable
         columns={columns}
-        data={items}
+        data={rows}
         page={page}
         pageSize={pageSize}
-        total={total}
+        total={safeTotal}
         onPageChange={onPageChange}
       />
     </div>

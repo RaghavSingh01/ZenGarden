@@ -5,8 +5,6 @@ import Button from '../../components/UI/Button.jsx';
 import Input from '../../components/UI/Input.jsx';
 import Select from '../../components/UI/Select.jsx';
 import Badge from '../../components/UI/Badge.jsx';
-import Pagination from '../../components/UI/Pagination.jsx';
-import { useInventory } from './useInventory.js';
 
 const UNIT_OPTIONS = [
   { value: '', label: 'All units' },
@@ -17,77 +15,116 @@ const UNIT_OPTIONS = [
   { value: 'pcs', label: 'pcs' }
 ];
 
-export default function InventoryTable({ onEdit, canEdit = true, canDelete = true }) {
-  const { items, total, query, setQuery, lowStockItems, removeItem, load } = useInventory();
-  const [search, setSearch] = useState(query.search || '');
-  const [unit, setUnit] = useState(query.unit || '');
-  const [lowOnly, setLowOnly] = useState(query.lowOnly || false);
+/**
+  Props expected from parent:
+  - items: array
+  - total: number
+  - page: number
+  - pageSize: number
+  - loading?: boolean
+  - onPageChange(page)
+  - onFilter(patch)  // { search, unit, lowOnly, page }
+  - onEdit(row)
+  - onDelete(id)
+*/
+export default function InventoryTable({
+  items = [],
+  total = 0,
+  page = 1,
+  pageSize = 20,
+  loading = false,
+  onPageChange,
+  onFilter,
+  onEdit,
+  onDelete,
+  canEdit = true,
+  canDelete = true
+}) {
+  const [search, setSearch] = useState('');
+  const [unit, setUnit] = useState('');
+  const [lowOnly, setLowOnly] = useState(false);
 
+  // Debounced search
   useEffect(() => {
-    const handler = setTimeout(() => setQuery(q => ({ ...q, page: 1, search })), 300);
-    return () => clearTimeout(handler);
-  }, [search, setQuery]);
+    const id = setTimeout(() => onFilter?.({ search, page: 1 }), 300);
+    return () => clearTimeout(id);
+  }, [search, onFilter]);
 
-  useEffect(() => {
-    setQuery(q => ({ ...q, page: 1, unit }));
-  }, [unit, setQuery]);
+  // Immediate filters
+  useEffect(() => { onFilter?.({ unit, page: 1 }); }, [unit, onFilter]);
+  useEffect(() => { onFilter?.({ lowOnly, page: 1 }); }, [lowOnly, onFilter]);
 
-  useEffect(() => {
-    setQuery(q => ({ ...q, page: 1, lowOnly }));
-  }, [lowOnly, setQuery]);
+  const rows = useMemo(() => (Array.isArray(items) ? items : []), [items]);
 
-  const filteredItems = useMemo(() => {
-    if (!lowOnly) return items;
-    return items.filter(x => typeof x.lowStockAlert === 'number' && Number(x.quantity) <= Number(x.lowStockAlert));
-  }, [items, lowOnly]);
+  const filteredRows = useMemo(() => {
+    if (!lowOnly) return rows;
+    return rows.filter(x =>
+      typeof x?.lowStockAlert === 'number' &&
+      Number(x?.quantity) <= Number(x?.lowStockAlert)
+    );
+  }, [rows, lowOnly]);
 
-  const columns = [
-    { key: 'ingredient', header: 'Ingredient' },
-    { key: 'quantity', header: 'Qty', render: r => <strong>{r.quantity}</strong> },
-    { key: 'unit', header: 'Unit' },
+  const columns = useMemo(() => ([
+    { key: 'ingredient', header: 'Ingredient', render: r => r?.ingredient || '—' },
+    { key: 'quantity', header: 'Qty', render: r => <strong>{r?.quantity ?? '—'}</strong> },
+    { key: 'unit', header: 'Unit', render: r => r?.unit || '—' },
     {
       key: 'lowStock',
       header: 'Status',
       render: r => {
-        const low = typeof r.lowStockAlert === 'number' && Number(r.quantity) <= Number(r.lowStockAlert);
+        const low = typeof r?.lowStockAlert === 'number' && Number(r?.quantity) <= Number(r?.lowStockAlert);
         return low ? <Badge variant="warn">Low</Badge> : <Badge variant="success">OK</Badge>;
       }
     },
-    { key: 'lastUpdated', header: 'Updated', render: r => r.lastUpdated ? new Date(r.lastUpdated).toLocaleString() : '—' },
+    {
+      key: 'updatedBy',
+      header: 'Updated by',
+      render: r => r?.updatedBy?.name || '—'
+    },
+    {
+      key: 'lastUpdated',
+      header: 'Updated',
+      render: r => r?.lastUpdated ? new Date(r.lastUpdated).toLocaleString() : '—'
+    },
     {
       key: 'actions',
       header: 'Actions',
       render: r => (
         <div className="row" style={{ gap: 8 }}>
           {canEdit && <Button variant="outline" onClick={() => onEdit?.(r)}>Edit</Button>}
-          {canDelete && <Button variant="danger" onClick={() => removeItem(r._id || r.id)}>Delete</Button>}
+          {canDelete && <Button variant="danger" onClick={() => onDelete?.(r?._id || r?.id)}>Delete</Button>}
         </div>
       )
     }
-  ];
+  ]), [onEdit, onDelete, canEdit, canDelete]);
 
   return (
     <div className="stack" style={{ gap: 12 }}>
       <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
-        <Input name="search" placeholder="Search ingredient..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input
+          name="search"
+          placeholder="Search ingredient..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <Select name="unit" value={unit} onChange={(e) => setUnit(e.target.value)} options={UNIT_OPTIONS} />
         <label className="row" style={{ gap: 6 }}>
           <input type="checkbox" checked={lowOnly} onChange={(e) => setLowOnly(e.target.checked)} />
           Show low stock only
         </label>
-        <Button variant="outline" onClick={() => load()}>Refresh</Button>
+        <Button variant="outline" onClick={() => onFilter?.({})} disabled={loading}>
+          {loading ? 'Refreshing…' : 'Refresh'}
+        </Button>
       </div>
 
       <DataTable
         columns={columns}
-        data={filteredItems}
-        page={query.page}
-        pageSize={query.limit}
-        total={total}
-        onPageChange={(p) => setQuery(q => ({ ...q, page: p }))}
+        data={filteredRows}
+        page={page}
+        pageSize={pageSize}
+        total={Number.isFinite(total) ? total : filteredRows.length}
+        onPageChange={onPageChange}
       />
-
-      <div className="muted">Low stock: {lowStockItems.length}</div>
     </div>
   );
 }

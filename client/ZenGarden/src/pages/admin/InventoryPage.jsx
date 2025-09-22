@@ -1,3 +1,4 @@
+// src/pages/admin/InventoryPage.jsx
 import React, { useState } from 'react';
 import InventoryTable from '../../features/inventory/InventoryTable.jsx';
 import InventoryForm from '../../features/inventory/InventoryForm.jsx';
@@ -18,7 +19,15 @@ export default function InventoryPage() {
       </div>
 
       <InventoryTable
+        items={inv.items}
+        total={inv.total}
+        page={inv.query.page}
+        pageSize={inv.query.limit}
+        loading={inv.loading}
+        onPageChange={(p) => inv.load({ page: p })}
+        onFilter={(patch) => inv.load(patch)}
         onEdit={(row) => { setEditing(row); setOpen(true); }}
+        onDelete={(id) => inv.removeItem(id)}
         canEdit
         canDelete
       />

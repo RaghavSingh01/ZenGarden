@@ -10,6 +10,24 @@ import {
   setUserStatus
 } from '../../services/usersService.js';
 
+const toArray = (val) =>
+  Array.isArray(val) ? val
+  : Array.isArray(val?.data) ? val.data
+  : Array.isArray(val?.items) ? val.items
+  : Array.isArray(val?.data?.users) ? val.data.users
+  : [];
+
+const getTotal = (res, data) =>
+  Number(
+    res?.meta?.total ??
+    res?.total ??
+    res?.data?.pagination?.total ??
+    data.length ??
+    0
+  );
+
+
+
 export function useUsers(initial = {}) {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
@@ -30,19 +48,20 @@ export function useUsers(initial = {}) {
     try {
       const q = { ...query, ...override };
       const res = await listUsers(q);
-      const data = res?.data || res?.items || [];
-      const meta = res?.meta || {};
+      const data = toArray(res);
       setItems(data);
-      setTotal(meta.total || res?.total || data.length);
+      setTotal(getTotal(res, data));
       setQuery(q);
     } catch (e) {
       setError(e);
+      setItems([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
   }, [query]);
 
-  useEffect(() => { load(); }, [load]); // initial load
+  useEffect(() => { load(); }, [load]);
 
   const create = useCallback(async (payload) => {
     const res = await createUser(payload);

@@ -1,6 +1,6 @@
 // src/features/menu/MenuGrid.jsx
 import React from 'react';
-import MenuCard from '../../components/cards/MenuCard.jsx';
+import MenuCard from '../../components/Cards/MenuCard.jsx';
 import Pagination from '../../components/UI/Pagination.jsx';
 import DishDetailsModal from './DishDetailsModal.jsx';
 

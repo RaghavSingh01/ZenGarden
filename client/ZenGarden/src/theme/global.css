@@ -40,12 +40,13 @@ p { margin: 0 0 var(--zg-space-3); color: var(--zg-color-text-muted); }
   box-shadow: var(--zg-shadow-sm);
 }
 .zg-btn:active { transform: translateY(1px); }
+.zg-btn:disabled { opacity: .6; cursor: not-allowed; }
 
 .zg-btn-primary { background: var(--zg-color-primary); color: #fff; }
 .zg-btn-primary:hover { filter: brightness(0.96); }
 
-.zg-btn-outline { background: #fff; color: var(--zg-color-primary); border-color: var(--zg-color-primary); }
-.zg-btn-outline:hover { background: color-mix(in srgb, var(--zg-color-primary) 6%, #fff); }
+.zg-btn-outline { background: var(--zg-color-surface); color: var(--zg-color-primary); border-color: var(--zg-color-primary); }
+.zg-btn-outline:hover { background: color-mix(in srgb, var(--zg-color-primary) 6%, var(--zg-color-surface)); }
 
 .zg-btn-secondary { background: var(--zg-color-accent); color: #111; }
 .zg-btn-secondary:hover { filter: brightness(0.98); }
@@ -68,10 +69,11 @@ p { margin: 0 0 var(--zg-space-3); color: var(--zg-color-text-muted); }
 .zg-chip {
   display: inline-flex; align-items: center;
   padding: 4px 8px; border-radius: var(--zg-radius-sm);
-  font-size: 12px; background: #f8f9fa; color: #374151; border: 1px solid var(--zg-color-border);
+  font-size: 12px; background: color-mix(in srgb, var(--zg-color-surface) 92%, #000 8%);
+  color: var(--zg-color-text); border: 1px solid var(--zg-color-border);
 }
 
-/* 6) Cards (shared by MenuCard, OrderCard, ReservationCard) */
+/* 6) Cards */
 .zg-card {
   background: var(--zg-color-surface);
   border: 1px solid var(--zg-color-border);
@@ -87,16 +89,16 @@ p { margin: 0 0 var(--zg-space-3); color: var(--zg-color-text-muted); }
 .zg-card-title { font-size: 1rem; font-weight: 600; color: var(--zg-color-text); }
 .zg-card-price { font-weight: 700; color: var(--zg-color-primary); }
 
-/* Multiline clamp for descriptions (standards-safe) */
+/* Description clamp */
 .zg-card-desc {
   color: var(--zg-color-text-muted);
   font-size: 0.92rem;
   line-height: 1.4;
-  display: -webkit-box;              /* required for clamp */
-  -webkit-box-orient: vertical;      /* required orientation */
-  /* -webkit-line-clamp: 2;             number of lines */
-  overflow: hidden;                   /* hide overflow */
-  text-overflow: ellipsis;            /* graceful overflow */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* -webkit-line-clamp: 2; */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .zg-card-meta { display: flex; gap: var(--zg-space-2); align-items: center; flex-wrap: wrap; }
@@ -105,20 +107,29 @@ p { margin: 0 0 var(--zg-space-3); color: var(--zg-color-text-muted); }
 .zg-label { font-size: 12px; color: #6b7280; }
 .zg-value { font-weight: 600; color: #111827; }
 
-/* 7) Forms */
+/* 7) Forms (theme-aware) */
 .zg-input, .zg-select, .zg-textarea {
-  width: 100%; padding: 10px 12px;
+  width: 100%;
+  padding: 10px 12px;
   border-radius: var(--zg-radius-md);
   border: 1px solid var(--zg-color-border);
-  background: #fff; color: var(--zg-color-text);
+  background: var(--zg-color-surface);      /* adapt to light/dark */
+  color: var(--zg-color-text);              /* always readable */
   box-shadow: var(--zg-shadow-sm);
+}
+.zg-input::placeholder, .zg-textarea::placeholder {
+  color: color-mix(in srgb, var(--zg-color-text) 50%, transparent);
 }
 .zg-input:focus, .zg-select:focus, .zg-textarea:focus {
   outline: 2px solid color-mix(in srgb, var(--zg-color-primary) 35%, transparent);
   border-color: var(--zg-color-primary);
 }
+.zg-input:disabled, .zg-select:disabled, .zg-textarea:disabled {
+  opacity: .7; cursor: not-allowed;
+  background: color-mix(in srgb, var(--zg-color-surface) 94%, #000 6%);
+}
 
-/* 8) Navbar baseline */
+/* 8) Navbar */
 .navbar {
   position: sticky; top: 0; z-index: 20;
   background: var(--zg-color-surface);
@@ -130,23 +141,7 @@ p { margin: 0 0 var(--zg-space-3); color: var(--zg-color-text-muted); }
 }
 .brand { font-weight: 800; color: var(--zg-color-primary); }
 
-/* Optional utilities */
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.clamp-2 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  /* -webkit-line-clamp: 2; */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.clamp-3 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  /* -webkit-line-clamp: 3; */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+/* 9) Utilities */
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clamp-2 { display: -webkit-box; -webkit-box-orient: vertical; /* -webkit-line-clamp: 2; */ overflow: hidden; text-overflow: ellipsis; }
+.clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; /* -webkit-line-clamp: 3; */ overflow: hidden; text-overflow: ellipsis; }

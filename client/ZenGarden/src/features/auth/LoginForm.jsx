@@ -1,3 +1,4 @@
+// src/features/auth/LoginForm.jsx
 import React, { useState } from 'react';
 import Input from '../../components/UI/Input.jsx';
 import Button from '../../components/UI/Button.jsx';
@@ -6,7 +7,9 @@ import { useToast } from '../../hooks/useToast.js';
 import { useNavigate } from 'react-router-dom';
 import { ROLES } from '../../config/roles.js';
 import { ROUTES } from '../../config/routes.js';
-import { setAuth } from '../../store/authStore.js'; // implement setAuth({ token, user })
+import { setAuth } from '../../store/authStore.js';
+import http from '../../services/http.js';
+import { apiUrl } from '../../config/env.js';
 
 export default function LoginForm() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -21,10 +24,45 @@ export default function LoginForm() {
     e.preventDefault();
     setSubmitting(true);
     setError('');
+
     try {
+      // Call service (returns JSON body)
       const res = await login(form);
-      const { token, user } = res || {};
-      if (!token || !user) throw new Error('Invalid login response');
+
+      // Accept common API shapes:
+      // { token, user } or { token, data: { user } } or { accessToken, data: { user } }
+      const token =
+        res?.token ||
+        res?.accessToken ||
+        res?.data?.token;
+
+      let user =
+        res?.user ||
+        res?.data?.user ||
+        res?.profile;
+
+      if (!token) {
+        throw new Error('Invalid login response');
+      }
+
+      // Optionally set default Authorization for subsequent calls
+      http.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+      // If user not included, fetch profile
+      if (!user) {
+        try {
+          const me = await http.get(apiUrl('/api/auth/profile')).then(r => r.data);
+          user = me?.user || me?.data?.user || me || null;
+        } catch {
+          // Ignore; will proceed with token only
+        }
+      }
+
+      if (!user) {
+        throw new Error('Profile missing in response');
+      }
+
+      // Persist auth and notify
       setAuth({ token, user });
       toast.show('Logged in', 'success');
 
@@ -32,9 +70,11 @@ export default function LoginForm() {
       if (user.role === ROLES.ADMIN) navigate(ROUTES.ADMIN_ANALYTICS, { replace: true });
       else if (user.role === ROLES.CHEF) navigate(ROUTES.CHEF_HOME, { replace: true });
       else navigate(ROUTES.MENU, { replace: true });
+
     } catch (err) {
-      setError(err?.response?.data?.message || err.message || 'Login failed');
-      toast.show('Login failed', 'danger');
+      const msg = err?.response?.data?.message || err.message || 'Login failed';
+      setError(msg);
+      toast.show(msg, 'danger');
     } finally {
       setSubmitting(false);
     }
