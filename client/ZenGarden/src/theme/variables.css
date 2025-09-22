@@ -1,0 +1,61 @@
+:root {
+  /* Brand */
+  --zg-color-primary: #2c5530;     /* Deep green */
+  --zg-color-accent: #f4d03f;      /* Gold */
+  --zg-color-bg: #f8f9fa;          /* App background */
+  --zg-color-surface: #ffffff;     /* Cards / surfaces */
+  --zg-color-border: #e5e7eb;
+  --zg-color-text: #1f2937;        /* Slate-800 */
+  --zg-color-text-muted: #4b5563;  /* Slate-600 */
+
+  /* Semantic */
+  --zg-color-danger: #dc3545;
+  --zg-color-success: #10b981;
+  --zg-color-warn: #f59e0b;
+  --zg-color-info: #0ea5e9;
+
+  /* Typography */
+  --zg-font-sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --zg-font-size-base: 16px;
+  --zg-font-size-sm: 14px;
+  --zg-font-size-lg: 18px;
+  --zg-line-height: 1.5;
+
+  /* Spacing */
+  --zg-space-1: 4px;
+  --zg-space-2: 8px;
+  --zg-space-3: 12px;
+  --zg-space-4: 16px;
+  --zg-space-5: 20px;
+  --zg-space-6: 24px;
+
+  /* Radius */
+  --zg-radius-sm: 6px;
+  --zg-radius-md: 8px;
+  --zg-radius-lg: 12px;
+  --zg-radius-full: 999px;
+
+  /* Shadows */
+  --zg-shadow-sm: 0 1px 2px rgba(0,0,0,.04);
+  --zg-shadow-md: 0 2px 6px rgba(0,0,0,.08);
+  --zg-shadow-lg: 0 6px 16px rgba(0,0,0,.12);
+
+  /* Layout */
+  --zg-container-max: 1200px;
+  --zg-navbar-height: 56px;
+
+  /* Component tokens */
+  --zg-btn-height: 40px;
+  --zg-card-media-h: 180px;
+}
+
+/* Optional dark mode scaffold */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --zg-color-bg: #0b0f0c;
+    --zg-color-surface: #121612;
+    --zg-color-border: #25302a;
+    --zg-color-text: #e5e7eb;
+    --zg-color-text-muted: #9ca3af;
+  }
+}

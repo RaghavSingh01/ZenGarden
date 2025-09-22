@@ -1,0 +1,152 @@
+/* 1) Normalize / Base */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+html { font-size: var(--zg-font-size-base); }
+body {
+  margin: 0;
+  font-family: var(--zg-font-sans);
+  background: var(--zg-color-bg);
+  color: var(--zg-color-text);
+  line-height: var(--zg-line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+input, button, textarea, select { font: inherit; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+
+/* 2) Layout helpers */
+.container { width: 100%; margin: 0 auto; padding: 0 var(--zg-space-4); max-width: var(--zg-container-max); }
+.stack { display: flex; flex-direction: column; gap: var(--zg-space-3); }
+.row { display: flex; align-items: center; gap: var(--zg-space-3); flex-wrap: wrap; }
+.center { display: grid; place-items: center; }
+
+/* 3) Typography */
+h1, h2, h3, h4, h5, h6 { margin: 0 0 var(--zg-space-2); color: var(--zg-color-text); font-weight: 700; }
+p { margin: 0 0 var(--zg-space-3); color: var(--zg-color-text-muted); }
+
+/* 4) Buttons */
+.zg-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--zg-space-2);
+  min-height: var(--zg-btn-height);
+  padding: 0 var(--zg-space-4);
+  border-radius: var(--zg-radius-md);
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: transform .02s ease, background .2s ease, color .2s ease, border-color .2s ease, filter .2s ease;
+  box-shadow: var(--zg-shadow-sm);
+}
+.zg-btn:active { transform: translateY(1px); }
+
+.zg-btn-primary { background: var(--zg-color-primary); color: #fff; }
+.zg-btn-primary:hover { filter: brightness(0.96); }
+
+.zg-btn-outline { background: #fff; color: var(--zg-color-primary); border-color: var(--zg-color-primary); }
+.zg-btn-outline:hover { background: color-mix(in srgb, var(--zg-color-primary) 6%, #fff); }
+
+.zg-btn-secondary { background: var(--zg-color-accent); color: #111; }
+.zg-btn-secondary:hover { filter: brightness(0.98); }
+
+.zg-btn-danger { background: var(--zg-color-danger); color: #fff; }
+.zg-btn-danger:hover { filter: brightness(0.97); }
+
+/* 5) Badges / Chips */
+.zg-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-radius: var(--zg-radius-full);
+  font-size: 12px; font-weight: 600; color: #fff;
+}
+.zg-badge-success { background: var(--zg-color-success); }
+.zg-badge-warn { background: var(--zg-color-warn); color: #111; }
+.zg-badge-info { background: var(--zg-color-info); }
+.zg-badge-muted { background: #9ca3af; color: #111; }
+.zg-badge-accent { background: var(--zg-color-accent); color: #111; }
+
+.zg-chip {
+  display: inline-flex; align-items: center;
+  padding: 4px 8px; border-radius: var(--zg-radius-sm);
+  font-size: 12px; background: #f8f9fa; color: #374151; border: 1px solid var(--zg-color-border);
+}
+
+/* 6) Cards (shared by MenuCard, OrderCard, ReservationCard) */
+.zg-card {
+  background: var(--zg-color-surface);
+  border: 1px solid var(--zg-color-border);
+  border-radius: var(--zg-radius-lg);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: var(--zg-shadow-md);
+}
+.zg-card-media { position: relative; }
+.zg-card-img { width: 100%; height: var(--zg-card-media-h); object-fit: cover; display: block; }
+.zg-card-body { padding: 14px 16px; display: flex; flex-direction: column; gap: var(--zg-space-3); }
+.zg-card-header { display: flex; align-items: center; justify-content: space-between; gap: var(--zg-space-3); }
+.zg-card-title { font-size: 1rem; font-weight: 600; color: var(--zg-color-text); }
+.zg-card-price { font-weight: 700; color: var(--zg-color-primary); }
+
+/* Multiline clamp for descriptions (standards-safe) */
+.zg-card-desc {
+  color: var(--zg-color-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.4;
+  display: -webkit-box;              /* required for clamp */
+  -webkit-box-orient: vertical;      /* required orientation */
+  /* -webkit-line-clamp: 2;             number of lines */
+  overflow: hidden;                   /* hide overflow */
+  text-overflow: ellipsis;            /* graceful overflow */
+}
+
+.zg-card-meta { display: flex; gap: var(--zg-space-2); align-items: center; flex-wrap: wrap; }
+.zg-card-actions { display: flex; gap: var(--zg-space-3); justify-content: flex-end; flex-wrap: wrap; }
+.zg-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--zg-space-3); }
+.zg-label { font-size: 12px; color: #6b7280; }
+.zg-value { font-weight: 600; color: #111827; }
+
+/* 7) Forms */
+.zg-input, .zg-select, .zg-textarea {
+  width: 100%; padding: 10px 12px;
+  border-radius: var(--zg-radius-md);
+  border: 1px solid var(--zg-color-border);
+  background: #fff; color: var(--zg-color-text);
+  box-shadow: var(--zg-shadow-sm);
+}
+.zg-input:focus, .zg-select:focus, .zg-textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--zg-color-primary) 35%, transparent);
+  border-color: var(--zg-color-primary);
+}
+
+/* 8) Navbar baseline */
+.navbar {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--zg-color-surface);
+  border-bottom: 1px solid var(--zg-color-border);
+}
+.navbar .nav-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--zg-space-3);
+  padding: 10px 16px; max-width: var(--zg-container-max); margin: 0 auto; height: var(--zg-navbar-height);
+}
+.brand { font-weight: 800; color: var(--zg-color-primary); }
+
+/* Optional utilities */
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* -webkit-line-clamp: 2; */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* -webkit-line-clamp: 3; */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
