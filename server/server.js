@@ -4,14 +4,14 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
+const app = express();
+
+// 1) CORS — must be first
 const allowedOrigins = [
   'http://localhost:5173',
   'https://zen-garden-pink.vercel.app'
   // add more domains if you use previews or a custom domain
 ];
-const app = express();
-
-// 1) CORS — must be first
 
 app.use(cors({
   origin: function(origin, cb) {
