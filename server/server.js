@@ -28,7 +28,8 @@ app.use(express.json());
 // CORS: allow Vite dev and 127.0.0.1
 const allowedOrigins = [
   'http://localhost:5173',
-  'http://127.0.0.1:5173'
+  'http://127.0.0.1:5173',
+  'https://zen-garden-pink.vercel.app/'
 ];
 
 app.use(cors({

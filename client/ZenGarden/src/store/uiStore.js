@@ -13,7 +13,10 @@ function load() {
   }
 }
 function save() {
-  try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } catch {}
+  try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } 
+  catch(err) {
+    console.log("Failed: ", err);
+  }
 }
 function publish() { watchers.forEach((w) => w(ui)); }
 

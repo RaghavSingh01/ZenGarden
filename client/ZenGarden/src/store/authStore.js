@@ -15,7 +15,9 @@ function loadInitial() {
 function persist() {
   try {
     localStorage.setItem(AUTH_KEY, JSON.stringify(authState));
-  } catch {}
+  } catch (err){
+    console.log("Persist failed: ",err);
+  }
 }
 function notify() {
   listeners.forEach((l) => l(authState));
