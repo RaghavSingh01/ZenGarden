@@ -1,62 +1,113 @@
-// server.js (or app.js)
+// server/server.js
 require('dotenv').config();
+
 const express = require('express');
+const mongoose = require('mongoose');
+const morgan = require('morgan');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
+
+const userRoutes = require('./routes/userRoutes');
+const reservationRoutes = require('./routes/reservationRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
+const authRoutes = require('./routes/authRoutes');
+const menuRoutes = require('./routes/menuRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
-// 1) CORS — must be first
+/* ---------- Core middleware ---------- */
+
+// Log early (only in dev)
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// JSON body parser
+app.use(express.json());
+
+// CORS: allow Vite dev and 127.0.0.1
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://zen-garden-pink.vercel.app'
-  // add more domains if you use previews or a custom domain
+  'http://127.0.0.1:5173',
+  'https://zen-garden-pink.vercel.app/'
 ];
 
 app.use(cors({
-  origin: function(origin, cb) {
-    if (!origin) return cb(null, true); // SSR/curl/postman
+  origin: (origin, cb) => {
+    // Allow tools without Origin header (Postman/health checks)
+    if (!origin) return cb(null, true);
     if (allowedOrigins.includes(origin)) return cb(null, true);
-    return cb(new Error(`Origin ${origin} not allowed by CORS`));
+    return cb(new Error('Not allowed by CORS'));
   },
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
-  credentials: true // set to true only if you use cookies for auth
+  credentials: false // set to true only if you use cookies for auth
 }));
 
-// Ensure every preflight succeeds with correct headers
+// Ensure all preflights are answered
+app.options('', cors());
 
-app.use((req, res, next) => {
-  res.header('Vary', 'Origin');
-  next();
+/* ---------- Health endpoints ---------- */
+
+app.get('/', (req, res) => {
+  res.send('Restaurant Management API is running...');
 });
 
-// 2) Core middleware
-app.use(express.json());
-app.use(cookieParser());
+app.get('/health', (req, res) => {
+  res.status(200).json({ ok: true, env: process.env.NODE_ENV || 'production' });
+});
 
-// 3) Health check
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+/* ---------- Routes ---------- */
 
-// 4) Routes (ensure these exist)
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/reservations', require('./routes/reservationRoutes'));
-app.use('/api/inventory', require('./routes/inventoryRoutes'));
-app.use('/api/menu', require('./routes/menuRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
 
-// 5) Not found handler
-app.use((req, res) => res.status(404).json({ message: 'Not Found' }));
+app.use('/api/payment', paymentRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/reservations', reservationRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
-// 6) Error handler
+/* ---------- Global error handler ---------- */
+
+
+
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error('Error:', err.stack || err);
   const status = err.status || 500;
-  res.status(status).json({ message: err.message || 'Server Error' });
+  res.status(status).json({
+    success: false,
+    message: err.message || 'Something went wrong!'
+  });
 });
 
-const port = process.env.PORT || 8080;
-app.listen(port, () => {
-  console.log(`API listening on ${port}`);
-  console.log('Allowed origins:', allowedOrigins);
-});
+/* ---------- DB connection & server start ---------- */
+
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error('Missing MONGO_URI in environment.');
+  process.exit(1);
+}
+
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log('✅ MongoDB connected');
+    // Bind on 0.0.0.0 for Render; Node defaults to this if host not provided
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running in ${process.env.NODE_ENV || 'production'} on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  });
+
+/* ---------- Notes ----------
+- If you switch to cookie-based auth:
+  - Set credentials: true in cors options.
+  - Set cookies with { httpOnly: true, secure: true, sameSite: 'none' }.
+  - On the client, use axios with { withCredentials: true }.
+
+- When you deploy the frontend, add its https origin to allowedOrigins.
+*/
